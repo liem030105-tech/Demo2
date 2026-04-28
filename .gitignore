@@ -21,6 +21,11 @@ Thumbs.db
 *.env
 .env
 .env.*
+.env/
+!.env/*.example.json
+**/key.properties
+**/*.jks
+**/*.keystore
 **/google-services.json
 **/firebase_options.dart
 

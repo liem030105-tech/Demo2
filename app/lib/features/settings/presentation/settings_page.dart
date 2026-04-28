@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:app/core/widgets/inline_error_card.dart';
@@ -80,6 +81,51 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       ),
     );
     if (ok == true) await vm.logout();
+  }
+
+  Future<void> _confirmDeleteData(SettingsViewModel vm) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xoá dữ liệu trên cloud?'),
+        content: const Text(
+          'Thao tác này sẽ xoá giao dịch, hoá đơn (ảnh) và các dữ liệu liên quan '
+          'trên Supabase, rồi đăng xuất.\n\n'
+          'Tài khoản đăng nhập (Auth) có thể vẫn tồn tại cho đến khi được xử lý '
+          'theo yêu cầu qua email hỗ trợ.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Huỷ'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xoá dữ liệu'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await vm.deleteAllUserDataAndSignOut();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã xoá dữ liệu và đăng xuất')),
+      );
+    } on SettingsException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 
   @override
@@ -178,6 +224,62 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     onPressed: vm.loading ? null : () => _confirmLogout(vm),
                     icon: const Icon(Icons.logout),
                     label: const Text('Đăng xuất'),
+                  ),
+                  const SizedBox(height: 24),
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer.withValues(
+                          alpha: 0.35,
+                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Quyền riêng tư',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Để yêu cầu xoá hoàn toàn tài khoản (Auth), gửi email tới '
+                            '${SettingsViewModel.supportEmail}.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: vm.loading
+                                ? null
+                                : () async {
+                                    await Clipboard.setData(
+                                      const ClipboardData(
+                                        text: SettingsViewModel.supportEmail,
+                                      ),
+                                    );
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Đã sao chép email hỗ trợ'),
+                                      ),
+                                    );
+                                  },
+                            child: const Text('Sao chép email hỗ trợ'),
+                          ),
+                          const SizedBox(height: 12),
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.error,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onError,
+                            ),
+                            onPressed:
+                                vm.loading ? null : () => _confirmDeleteData(vm),
+                            icon: const Icon(Icons.delete_forever_outlined),
+                            label: const Text('Xoá dữ liệu trên cloud'),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

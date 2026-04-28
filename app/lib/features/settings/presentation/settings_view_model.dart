@@ -24,6 +24,8 @@ class SettingsViewModel extends ChangeNotifier {
 
   final SupabaseClient _supabase;
 
+  static const supportEmail = 'liem030105@gmail.com';
+
   bool _loading = false;
   String? _error;
   ProfileModel? _profile;
@@ -89,6 +91,56 @@ class SettingsViewModel extends ChangeNotifier {
 
   Future<void> logout() async {
     await _supabase.auth.signOut();
+  }
+
+  /// Deletes app data stored in Supabase for the current user (DB rows + receipt
+  /// objects in Storage), then signs out.
+  ///
+  /// Note: this does **not** delete the Supabase Auth user record itself (requires
+  /// a privileged server operation). Users can request full account deletion via
+  /// [supportEmail] (see Privacy Policy).
+  Future<void> deleteAllUserDataAndSignOut() async {
+    final uid = _supabase.auth.currentUser?.id;
+    if (uid == null) throw SettingsException('Chưa đăng nhập');
+
+    _loading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final receiptRows = await _supabase
+          .from('transaction_receipts')
+          .select('path')
+          .eq('user_id', uid);
+      final paths = (receiptRows as List<dynamic>)
+          .map((e) => (e as Map)['path'] as String?)
+          .whereType<String>()
+          .toList();
+
+      if (paths.isNotEmpty) {
+        const chunk = 95;
+        for (var i = 0; i < paths.length; i += chunk) {
+          final slice = paths.sublist(
+            i,
+            i + chunk > paths.length ? paths.length : i + chunk,
+          );
+          await _supabase.storage.from('receipts').remove(slice);
+        }
+      }
+
+      await _supabase.from('transaction_receipts').delete().eq('user_id', uid);
+      await _supabase.from('transactions').delete().eq('user_id', uid);
+      await _supabase.from('budgets').delete().eq('user_id', uid);
+      await _supabase.from('accounts').delete().eq('user_id', uid);
+      await _supabase.from('categories').delete().eq('user_id', uid);
+      await _supabase.from('profiles').delete().eq('id', uid);
+
+      await _supabase.auth.signOut();
+    } catch (e) {
+      throw SettingsException(e.toString());
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
   }
 }
 

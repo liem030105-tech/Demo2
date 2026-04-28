@@ -288,6 +288,11 @@ flutter pub get
 flutter run
 ```
 
+## Privacy Policy (Google Play)
+
+- Source: `[docs/privacy-policy.md](docs/privacy-policy.md)`
+- Publish it via GitHub Pages (folder `/docs`) to obtain a public URL for Play Console.
+
 ### Gợi ý dev workflow (tuỳ chọn)
 
 - Dùng Supabase Dashboard để tạo bảng/policy nhanh trong giai đoạn MVP.

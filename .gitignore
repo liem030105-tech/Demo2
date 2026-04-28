@@ -1,0 +1,30 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / local config
+*.env
+.env
+.env.*
+**/google-services.json
+**/firebase_options.dart
+
+# Embedded repos in this workspace
+skills/flutter-skills/
+skills/supabase-agent-skills/
+

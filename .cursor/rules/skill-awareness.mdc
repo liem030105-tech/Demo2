@@ -1,0 +1,22 @@
+---
+description: Always check available skills and use relevant ones for tasks
+alwaysApply: true
+---
+
+# Skill-first workflow
+
+Before starting any task, quickly review the available Agent Skills in the workspace (and any globally available skills) and decide whether a relevant skill applies.
+
+## Required behavior
+
+- If the task matches a skill’s stated “Use when”, follow that skill’s instructions as the preferred approach.
+- If multiple skills could apply, pick the most specific one (task-specific beats general).
+- If a skill requires reading a `SKILL.md` first, do that before proceeding.
+- If no relevant skill exists, proceed normally but keep the skill list in mind as the task evolves.
+
+## Practical checklist (do this at the start)
+
+- Scan `skills/` for available skill folders (and any known global skills).
+- Select applicable skill(s) based on the user request.
+- Apply the chosen skill’s workflow; avoid reinventing its process.
+

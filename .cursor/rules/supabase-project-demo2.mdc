@@ -1,0 +1,18 @@
+---
+description: Use Supabase project Demo2 for this workspace
+alwaysApply: true
+---
+
+# Supabase project binding (workspace default)
+
+This workspace is bound to the Supabase project:
+
+- **Project name**: Demo2
+- **Project ref / id**: `mnrekwogjctfeoqlnexr`
+- **Region**: `ap-northeast-1`
+
+## Required behavior
+
+- For any Supabase task (MCP calls, SQL, schema, migrations, edge functions, logs, keys), **default to project ref** `mnrekwogjctfeoqlnexr`.
+- If a request could affect multiple projects, **confirm the intended project** by stating which ref you will use before executing.
+

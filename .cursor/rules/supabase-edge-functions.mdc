@@ -1,0 +1,17 @@
+---
+description: Prefer Supabase MCP Edge Functions for backend features
+alwaysApply: true
+---
+
+# Supabase Edge Functions (MCP-first)
+
+When implementing features that require backend logic (validation, aggregation, scheduled work, third‑party API calls, privileged operations), prefer using **Supabase Edge Functions** and manage them via **Supabase MCP**.
+
+## Required behavior
+
+- Default to creating/updating/deploying Edge Functions through Supabase MCP tooling (e.g. list/get/deploy edge functions).
+- Prefer Edge Functions over spinning up a separate backend service for MVP features.
+- Keep business logic in Edge Functions when it must be trusted/server-side; keep UI-only logic in Flutter.
+- Use the workspace’s default Supabase project ref unless the user specifies otherwise:
+  - `mnrekwogjctfeoqlnexr` (Demo2)
+

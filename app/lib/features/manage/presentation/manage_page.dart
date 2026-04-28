@@ -13,6 +13,34 @@ class ManagePage extends ConsumerStatefulWidget {
 }
 
 class _ManagePageState extends ConsumerState<ManagePage> {
+  static const List<String> _categoryPaletteHex = [
+    // reds / pinks
+    '#EF5350',
+    '#EC407A',
+    '#AB47BC',
+    '#7E57C2',
+    // blues
+    '#5C6BC0',
+    '#42A5F5',
+    '#29B6F6',
+    '#26C6DA',
+    // greens
+    '#26A69A',
+    '#66BB6A',
+    '#9CCC65',
+    '#D4E157',
+    // yellows / oranges
+    '#FFEE58',
+    '#FFCA28',
+    '#FFA726',
+    '#FF7043',
+    // browns / greys
+    '#8D6E63',
+    '#BDBDBD',
+    '#78909C',
+    '#607D8B',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +56,91 @@ class _ManagePageState extends ConsumerState<ManagePage> {
     if (s.length == 6) s = 'FF$s';
     if (s.length != 8) return null;
     return Color(int.parse(s, radix: 16));
+  }
+
+  String _defaultCategoryColorHex(String type) =>
+      type == 'income' ? '#26A69A' : '#78909C';
+
+  Future<String?> _showCategoryColorPickerDialog(
+    BuildContext dialogContext, {
+    required String currentHex,
+  }) {
+    return showDialog<String>(
+      context: dialogContext,
+      builder: (pickerCtx) => AlertDialog(
+        title: const Text('Chọn màu'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => Navigator.pop(pickerCtx, ''),
+                icon: const Icon(Icons.format_color_reset_outlined),
+                label: const Text('Màu mặc định'),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: _categoryPaletteHex.map((hex) {
+                  return _colorSwatch(
+                    hex: hex,
+                    selected: currentHex == hex,
+                    onTap: () => Navigator.pop(pickerCtx, hex),
+                    tooltip: hex,
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(pickerCtx),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _colorSwatch({
+    required String hex,
+    required bool selected,
+    required VoidCallback onTap,
+    String? tooltip,
+  }) {
+    final c = _parseHexColor(hex) ?? Colors.transparent;
+    return Tooltip(
+      message: tooltip ?? hex,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: c,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? Colors.black.withValues(alpha: 0.75) : Colors.black12,
+              width: selected ? 2 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: selected
+              ? const Icon(Icons.check, size: 18, color: Colors.white)
+              : null,
+        ),
+      ),
+    );
   }
 
   Future<void> _snack(Object e) async {
@@ -162,12 +275,58 @@ class _ManagePageState extends ConsumerState<ManagePage> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: colorCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Màu (hex, tuỳ chọn)',
-                      hintText: '#FF7043',
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Màu',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.palette_outlined),
+                        label: const Text('Chọn màu'),
+                        onPressed: () async {
+                          final picked = await _showCategoryColorPickerDialog(
+                            context,
+                            currentHex: colorCtrl.text.trim(),
+                          );
+                          if (picked == null) return;
+                          setLocal(() {
+                            colorCtrl.text = picked;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: _parseHexColor(colorCtrl.text.trim()) ??
+                                    _parseHexColor(_defaultCategoryColorHex(type)),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.black12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              colorCtrl.text.trim().isEmpty
+                                  ? 'Màu mặc định (${_defaultCategoryColorHex(type)})'
+                                  : 'Đã chọn: ${colorCtrl.text.trim()}',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

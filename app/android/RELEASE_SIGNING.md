@@ -2,9 +2,11 @@
 
 ### 1) Create a keystore (one-time)
 
-Run in PowerShell (adjust paths as you like):
+Run in PowerShell from the **`app/android`** folder (same folder as `key.properties`):
 
 ```powershell
+Set-Location "path\to\your\repo\app\android"
+
 keytool -genkeypair -v `
   -keystore "$PWD\upload-keystore.jks" `
   -storetype JKS `
@@ -22,8 +24,10 @@ Example:
 storePassword=*****
 keyPassword=*****
 keyAlias=upload
-storeFile=upload-keystore.jks
+storeFile=../upload-keystore.jks
 ```
+
+`storeFile` is resolved from the **`app/android/app`** module directory, so when the `.jks` lives in **`app/android/`**, use **`../upload-keystore.jks`**.
 
 Notes:
 - `key.properties` and `*.jks` are gitignored.
